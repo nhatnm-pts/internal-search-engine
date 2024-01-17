@@ -1,0 +1,28 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+    -   id: fix-encoding-pragma
+    -   id: mixed-line-ending
+    -   id: check-ast
+    -   id: requirements-txt-fixer
+-   repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+    -   id: black
+-   repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.56.0
+    hooks:
+    -   id: eslint
+        additional_dependencies:
+        - eslint@3.12.2
+        - eslint-config-google@0.7.1
+        - eslint-config-prettier@1.7.0
+        - eslint-plugin-vue@8.0.3
