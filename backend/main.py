@@ -5,6 +5,8 @@ from elasticsearch import Elasticsearch, exceptions as elasticExceptions
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+from nltk import download
+from nltk.tokenize import word_tokenize
 import os
 from os.path import join
 import psycopg2
@@ -121,6 +123,10 @@ def indexing_path():
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    try:
+        word_tokenize("Hello, World!")
+    except LookupError:
+        download("punkt")
     scheduler = BackgroundScheduler()
     scheduler.add_job(
         name="Indexing Cron",
@@ -176,7 +182,23 @@ async def search(query: str) -> SearchResponse:
             SearchHit(
                 id=doc["_id"],
                 name=name,
-                content=doc["_source"]["content"].replace("\n", "<br />"),
+                content=prepare_content(doc["_source"]["content"], query),
             )
         )
     return SearchResponse(size=total_hits if total_hits < 100 else 100, result=res)
+
+
+def prepare_content(text: str, query: str) -> str:
+    query_tokenized = word_tokenize(query.lower())
+    paragraphs = text.split("\n")
+    res = []
+    for paragraph in paragraphs:
+        paragraph_tokenized = word_tokenize(paragraph)
+        result_paragraph = []
+        for token in paragraph_tokenized:
+            if token.lower() not in query_tokenized:
+                result_paragraph.append(token)
+            else:
+                result_paragraph.append(f"<b>{token}</b>")
+        res.append(" ".join(result_paragraph))
+    return "<br />".join(res)

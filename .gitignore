@@ -6,7 +6,6 @@ filestore/
 
 __pycache__/
 
-
 *.pyi
 
 *.pyc

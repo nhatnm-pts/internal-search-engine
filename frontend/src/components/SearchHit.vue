@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <p v-html="boldingWords()" />
+    <p v-html="data.content" />
   </div>
 </template>
 
@@ -10,15 +10,6 @@ export default {
   props: {
     data: Object,
   },
-  methods: {
-    boldingWords() {
-      const queryRegex = new RegExp(this.data.query, "gi");
-      return this.data.content.replaceAll(
-        queryRegex,
-        `<b>${this.data.query}</b>`
-      );
-    }
-  }
 }
 </script>
 

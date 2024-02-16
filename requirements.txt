@@ -3,6 +3,7 @@ anyio==4.2.0
 APScheduler==3.10.4
 elasticsearch==7.6.0
 fastapi==0.109.0
+nltk==3.8.1
 pre-commit==3.6.0
 psycopg2==2.9.9
 uvicorn==0.25.0
