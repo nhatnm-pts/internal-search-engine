@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-from apscheduler.schedulers.background import BackgroundScheduler
-from contextlib import asynccontextmanager
-from elasticsearch import Elasticsearch, exceptions as elasticExceptions
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+"""
+Single-server-file
+"""
 import logging
-from nltk import download
-from nltk.tokenize import word_tokenize
 import os
+from contextlib import asynccontextmanager
 from os.path import join
+
 import psycopg2
 import psycopg2.extras
+from apscheduler.schedulers.background import BackgroundScheduler
 
+# isort: off
 from constance import (
     ELASTIC_PASSWORD,
     ELASTIC_USERNAME,
@@ -23,12 +23,23 @@ from constance import (
     PSQL_TABLE_NAME,
     PSQL_USER,
 )
+
+# isort: on
+from elasticsearch import Elasticsearch
+from elasticsearch import exceptions as elasticExceptions
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from models import SearchHit, SearchResponse
+from nltk import download
+from nltk.tokenize import word_tokenize
 
 logger = logging.getLogger("uvicorn.error")
 
 
 def index_exists() -> bool:
+    """
+    Ensure index existed before any new process running
+    """
     try:
         es.indices.create("filestore")
         es.indices.create("postgres")
@@ -40,14 +51,20 @@ def index_exists() -> bool:
         return False
 
 
-def indexing():
+def indexing() -> None:
+    """
+    Indexing filestore path or postgreSQL database
+    """
     if not index_exists():
         return
     indexing_path()
     indexing_postgres()
 
 
-def indexing_postgres():
+def indexing_postgres() -> None:
+    """
+    Indexing PosgreSQL DB
+    """
     if not all([PSQL_USER, PSQL_DBNAME, PSQL_PASSWD, PSQL_TABLE_NAME]):
         logger.info(
             "PSQL_TABLE_NAME, PSQL_USER, PSQL_DBNAME, PSQL_PASSWD environment"
@@ -95,7 +112,10 @@ def indexing_postgres():
         logger.error(f"PostgreSQL synchronization failed, error: {e.args}")
 
 
-def indexing_path():
+def indexing_path() -> None:
+    """
+    Indexing filestore path
+    """
     if not FILE_PATH:
         logger.info("FILE_PATH environment variable is not set, skipped!")
         return
@@ -123,6 +143,10 @@ def indexing_path():
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    """
+    - Download NLTK Punkt package
+    - Add scheduler for indexing
+    """
     try:
         word_tokenize("Hello, World!")
     except LookupError:
@@ -156,6 +180,9 @@ app.add_middleware(
 
 @app.get("/search/")
 async def search(query: str) -> SearchResponse:
+    """
+    Search route
+    """
     es_result = es.search(
         index="_all",
         body={
@@ -189,6 +216,16 @@ async def search(query: str) -> SearchResponse:
 
 
 def prepare_content(text: str, query: str) -> str:
+    """
+    bolding searched word & prettier frontend content
+    args:
+        text [str]: search result content
+        query [str]: search query
+    return:
+        prettier frontend content
+    returntype:
+        str
+    """
     query_tokenized = word_tokenize(query.lower())
     paragraphs = text.split("\n")
     res = []

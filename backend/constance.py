@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Environment variables or constances
+"""
 import os
 from os.path import dirname, join, realpath
 
@@ -15,11 +18,12 @@ FILE_PATH = get_env_param("FILE_PATH", "")
 if not FILE_PATH:
     FILE_PATH = join(dirname(realpath(__file__)), "filestore")
 
-FILE_EXTENSION_ALLOWED = get_env_param("FILE_EXTENSION_ALLOWED")
-if not FILE_EXTENSION_ALLOWED:
+FILE_EXTENSION_ALLOWED: list = []
+env_file_extension = get_env_param("FILE_EXTENSION_ALLOWED")
+if not env_file_extension:
     FILE_EXTENSION_ALLOWED = ["txt", "csv", "json"]
 else:
-    FILE_EXTENSION_ALLOWED = FILE_EXTENSION_ALLOWED.split(",")
+    FILE_EXTENSION_ALLOWED = env_file_extension.split(",")
 
 PSQL_DBNAME = get_env_param("PSQL_DBNAME")
 

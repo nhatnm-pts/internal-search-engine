@@ -1,14 +1,26 @@
 # -*- coding: utf-8 -*-
-from pydantic import BaseModel
+"""
+Backend models
+"""
 from typing import List
+
+from pydantic import BaseModel
 
 
 class SearchHit(BaseModel):
+    """
+    Response model
+    """
+
     id: str
     name: str
     content: str
 
 
 class SearchResponse(BaseModel):
+    """
+    Get request model
+    """
+
     size: int
     result: List[SearchHit]

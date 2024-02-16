@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v4.5.0
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
@@ -10,15 +10,30 @@ repos:
     -   id: check-ast
     -   id: requirements-txt-fixer
 -   repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 24.2.0
     hooks:
     -   id: black
 -   repo: https://github.com/pycqa/flake8
     rev: 7.0.0
     hooks:
     -   id: flake8
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+-   repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+    -   id: interrogate
+        args: [--fail-under=80, --quiet]
+        exclude: ^node_modules/
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+    -   id: mypy
+        args: [--install-types, --non-interactive]
 -   repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.56.0
+    rev: v9.0.0-beta.0
     hooks:
     -   id: eslint
         additional_dependencies:
