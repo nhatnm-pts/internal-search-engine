@@ -1,13 +1,19 @@
 <template>
   <p v-if="data.size > 0">Count: {{ data.size }}</p>
+  <p v-if="data.size === 0">No results found</p>
   <div
     class="container"
-    :class="{'result': data.size > 0}"
+    :class="
+      {
+        'result': data.size > 0,
+        'starter': typeof data.size === 'undefined' || data.size === 0
+      }
+    "
   >
     <SearchHit
       v-for="element in data.result"
       :key="element.file_path"
-      :data="{...element, query: data.query}"
+      :data="element"
     />
   </div>
 </template>
@@ -41,8 +47,12 @@ p {
   overflow: scroll;
 }
 
+.starter {
+  display: none !important;
+}
+
 .result {
-  height: 50vh !important;
+  height: 55vh !important;
   background-image: linear-gradient(to bottom right, rgba(255, 0, 0, 0.535), rgba(255, 196, 0, 0.502));
 }
 </style>
