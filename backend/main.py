@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, exceptions as elasticExceptions
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -26,7 +26,21 @@ from models import SearchHit, SearchResponse
 logger = logging.getLogger("uvicorn.error")
 
 
+def index_exists() -> bool:
+    try:
+        es.indices.create("filestore")
+        es.indices.create("postgres")
+        return True
+    except Exception as e:
+        if isinstance(e, elasticExceptions.RequestError) and e.args[0] == 400:
+            return True
+        logger.error(f"Cannot create index on Elasticsearch! {e.args}")
+        return False
+
+
 def indexing():
+    if not index_exists():
+        return
     indexing_path()
     indexing_postgres()
 
