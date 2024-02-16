@@ -18,6 +18,7 @@ from constance import (
     FILE_EXTENSION_ALLOWED,
     FILE_PATH,
     INTERVAL,
+    MAX_TOKENS,
     PSQL_DBNAME,
     PSQL_PASSWD,
     PSQL_TABLE_NAME,
@@ -32,6 +33,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import SearchHit, SearchResponse
 from nltk import download
 from nltk.tokenize import word_tokenize
+from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -226,7 +228,31 @@ def prepare_content(text: str, query: str) -> str:
     returntype:
         str
     """
+
+    def chop_text(text_tokenized: list) -> str:
+        """
+        Chop text to MAX_TOKENS
+        """
+        starter = 0
+        for i, token in enumerate(text_tokenized):
+            if token.lower() in query_tokenized:
+                starter = i
+                break
+        ender = len(text_tokenized) - 1
+        for i, token in enumerate(reversed(text_tokenized)):
+            if token.lower() in query_tokenized:
+                ender = len(text_tokenized) - i + 1
+                break
+        starter = starter - MAX_TOKENS // 2 if starter > MAX_TOKENS // 2 else 0
+        ender += MAX_TOKENS // 2
+        res = TreebankWordDetokenizer().detokenize(text_tokenized[starter:ender])
+
+        return f"...{res}..."
+
     query_tokenized = word_tokenize(query.lower())
+    text_tokenized = word_tokenize(text)
+    if len(text_tokenized) > MAX_TOKENS:
+        text = chop_text(text_tokenized)
     paragraphs = text.split("\n")
     res = []
     for paragraph in paragraphs:
@@ -237,5 +263,5 @@ def prepare_content(text: str, query: str) -> str:
                 result_paragraph.append(token)
             else:
                 result_paragraph.append(f"<b>{token}</b>")
-        res.append(" ".join(result_paragraph))
+        res.append(TreebankWordDetokenizer().detokenize(result_paragraph))
     return "<br />".join(res)

@@ -36,3 +36,5 @@ PSQL_TABLE_NAME = get_env_param("PSQL_TABLE_NAME")
 ELASTIC_USERNAME = get_env_param("ELASTIC_USERNAME")
 
 ELASTIC_PASSWORD = get_env_param("ELASTIC_PASSWORD")
+
+MAX_TOKENS = int(get_env_param("MAX_TOKENS", 4_000))
