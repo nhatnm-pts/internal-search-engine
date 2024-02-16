@@ -43,6 +43,6 @@ p {
 
 .result {
   height: 50vh !important;
-  background-image: linear-gradient(to bottom right, rgb(0, 119, 255), rgb(255, 196, 0));
+  background-image: linear-gradient(to bottom right, rgba(255, 0, 0, 0.535), rgba(255, 196, 0, 0.502));
 }
 </style>
