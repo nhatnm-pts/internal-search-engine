@@ -10,6 +10,14 @@ from os.path import join
 import psycopg2
 import psycopg2.extras
 from apscheduler.schedulers.background import BackgroundScheduler
+from chardet import detect
+from elasticsearch import Elasticsearch
+from elasticsearch import exceptions as elasticExceptions
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from nltk import download
+from nltk.tokenize import word_tokenize
+from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 # isort: off
 from constance import (
@@ -24,16 +32,9 @@ from constance import (
     PSQL_TABLE_NAME,
     PSQL_USER,
 )
+from models import SearchHit, SearchResponse
 
 # isort: on
-from elasticsearch import Elasticsearch
-from elasticsearch import exceptions as elasticExceptions
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from models import SearchHit, SearchResponse
-from nltk import download
-from nltk.tokenize import word_tokenize
-from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -128,20 +129,23 @@ def indexing_path() -> None:
             if file.split(".")[-1] not in FILE_EXTENSION_ALLOWED:
                 continue
             full_file_path = join(root, file)
-            with open(file=full_file_path, mode="r", encoding="mac_roman") as f:
+            with open(file=full_file_path, mode="r") as f:
                 try:
                     data = f.read()
-                    if not data:
-                        continue
-                    file_ids.append(full_file_path)
-                    es.index(
-                        index="filestore",
-                        id=full_file_path,
-                        body={"file_name": file, "content": data},
-                    )
-                except:  # noqa: E722
-                    logger.error(f"Cannot index file: {full_file_path}")
+                except UnicodeDecodeError:
+                    with open(file=full_file_path, mode="rb") as file_binary:
+                        binary_data = file_binary.read()
+                    encode = detect(binary_data)
+                    with open(file=full_file_path, mode="r", encoding=encode) as f:
+                        data = f.read()
+                if not data:
                     continue
+                file_ids.append(full_file_path)
+                es.index(
+                    index="filestore",
+                    id=full_file_path,
+                    body={"file_name": file, "content": data},
+                )
     logger.info("Start removing unused indexes!")
     query = {"query": {"bool": {"must_not": [{"ids": {"values": file_ids}}]}}}
     es.delete_by_query("filestore", body=query)

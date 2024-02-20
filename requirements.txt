@@ -1,6 +1,7 @@
 annotated-types==0.6.0
 anyio==4.2.0
 APScheduler==3.10.4
+chardet==5.2.0
 elasticsearch==7.6.0
 fastapi==0.109.0
 nltk==3.8.1
